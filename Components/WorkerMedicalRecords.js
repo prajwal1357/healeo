@@ -1,7 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
+import { 
+  User, 
+  Clock, 
+  Activity, 
+  Droplets, 
+  Scale, 
+  ChevronRight,
+  AlertCircle,
+  CheckCircle2,
+  Loader2,
+  Inbox,
+  CalendarDays
+} from "lucide-react";
 
 export default function WorkerMedicalRecords() {
   const [records, setRecords] = useState([]);
@@ -11,166 +24,144 @@ export default function WorkerMedicalRecords() {
   useEffect(() => {
     const fetchRecords = async () => {
       setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
 
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
-
-      if (authError || !user) {
-        setError("You must be logged in to view records.");
+      if (!user) {
+        setError("Session expired.");
         setLoading(false);
         return;
       }
 
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from("worker_patient_records")
         .select(`
-          id,
-          bp,
-          sugar,
-          weight,
-          symptoms,
-          condition,
-          created_at,
-          patient:app_users!worker_patient_records_patient_fkey (
-            id,
-            name
-          )
+          id, bp, sugar, weight, symptoms, condition, created_at,
+          patient:app_users!worker_patient_records_patient_id_fkey (name)
         `)
         .eq("worker_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error(error);
-        setError("Failed to load medical records.");
-      } else {
-        setRecords(data || []);
-      }
-
+      if (fetchError) setError("Failed to load records.");
+      else setRecords(data || []);
       setLoading(false);
     };
 
     fetchRecords();
   }, []);
 
-  /* ---------------- STATES ---------------- */
-
-  if (loading) {
-    return (
-      <div className="bg-white border rounded p-6 text-center text-gray-500">
-        Loading medical records…
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-white border rounded p-6 text-center text-red-600">
-        {error}
-      </div>
-    );
-  }
-
-  if (records.length === 0) {
-    return (
-      <div className="bg-white border rounded p-8 text-center">
-        <p className="text-gray-600 font-medium">
-          No medical records found
-        </p>
-        <p className="text-sm text-gray-500 mt-1">
-          Start by selecting a patient and submitting a checkup.
-        </p>
-      </div>
-    );
-  }
-
-  /* ---------------- TABLE ---------------- */
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error} />;
+  if (records.length === 0) return <EmptyRecordsState />;
 
   return (
-    <div className="bg-white border rounded overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead className="bg-gray-50 border-b">
-          <tr>
-            <Th>Patient</Th>
-            <Th>BP</Th>
-            <Th>Sugar</Th>
-            <Th>Weight</Th>
-            <Th>Symptoms</Th>
-            <Th>Condition</Th>
-            <Th>Date</Th>
-          </tr>
-        </thead>
+    <div className="relative group">
+      {/* Header for the Slider */}
+      <div className="flex items-center justify-between px-2 mb-4">
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+          <CalendarDays size={14} /> Recent Field Submissions
+        </h3>
+        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">
+          Swipe to view {records.length}
+        </span>
+      </div>
 
-        <tbody>
-          {records.map((r) => (
-            <tr
-              key={r.id}
-              className="border-b last:border-0 hover:bg-gray-50"
-            >
-              <Td className="font-medium">
-                {r.patient?.name || "—"}
-              </Td>
-              <Td>{r.bp || "—"}</Td>
-              <Td>{r.sugar || "—"}</Td>
-              <Td>{r.weight || "—"}</Td>
-              <Td className="max-w-xs truncate">
-                {r.symptoms || "—"}
-              </Td>
-              <Td>{renderConditionBadge(r.condition)}</Td>
-              <Td className="text-gray-500">
-                {new Date(r.created_at).toLocaleDateString()}
-              </Td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* Horizontal Scroll Container */}
+      <div className="flex gap-4 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory scroll-smooth no-scrollbar select-none">
+        {records.map((record) => (
+          <div key={record.id} className="min-w-[280px] md:min-w-[320px] snap-center">
+            <RecordSliderCard record={record} />
+          </div>
+        ))}
+        {/* Decorative end-spacer */}
+        <div className="min-w-[20px] shrink-0" />
+      </div>
+
+      {/* Fade indicators for better UX */}
+      <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-slate-50 to-transparent pointer-events-none" />
     </div>
   );
 }
 
-/* ---------------- UI HELPERS ---------------- */
+/* ---------------- SLIDER CARD COMPONENT ---------------- */
 
-function Th({ children }) {
+function RecordSliderCard({ record }) {
+  const isCritical = record.condition === 'critical';
+
   return (
-    <th className="px-4 py-3 text-left font-medium text-gray-600 whitespace-nowrap">
-      {children}
-    </th>
+    <div className={`h-full bg-white border border-slate-100 rounded-[2.5rem] p-6 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300`}>
+      <div className="flex justify-between items-start mb-6">
+        <div className="flex items-center gap-3">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${isCritical ? 'bg-rose-50 text-rose-500' : 'bg-indigo-50 text-indigo-600'}`}>
+            <User size={22} />
+          </div>
+          <div>
+            <h4 className="font-black text-slate-900 leading-tight">{record.patient?.name}</h4>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+              {new Date(record.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+            </p>
+          </div>
+        </div>
+        <StatusIcon condition={record.condition} />
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 mb-6">
+        <VitalBox label="BP" value={record.bp || "—"} />
+        <VitalBox label="Sugar" value={record.sugar || "—"} />
+        <VitalBox label="Wt" value={`${record.weight}kg`} />
+      </div>
+
+      <button className="w-full flex items-center justify-between bg-slate-50 hover:bg-indigo-600 hover:text-white transition-all p-3 rounded-2xl group/btn">
+        <span className="text-[10px] font-black uppercase tracking-widest ml-2">Full History</span>
+        <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+      </button>
+    </div>
   );
 }
 
-function Td({ children, className = "" }) {
+/* ---------------- HELPER COMPONENTS ---------------- */
+
+function VitalBox({ label, value }) {
   return (
-    <td className={`px-4 py-3 whitespace-nowrap ${className}`}>
-      {children}
-    </td>
+    <div className="flex flex-col items-center bg-slate-50/50 rounded-2xl p-3 border border-slate-100/50">
+      <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-1">{label}</span>
+      <span className="text-xs font-black text-slate-700">{value}</span>
+    </div>
   );
 }
 
-function renderConditionBadge(condition) {
-  if (condition === "stable") {
-    return (
-      <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">
-        🟢 Stable
-      </span>
-    );
-  }
+function StatusIcon({ condition }) {
+  const styles = {
+    stable: "bg-emerald-500 shadow-emerald-200",
+    attention: "bg-amber-500 shadow-amber-200",
+    critical: "bg-rose-500 shadow-rose-200",
+  };
+  return (
+    <div className={`w-3 h-3 rounded-full shadow-lg ${styles[condition] || 'bg-slate-300'}`} />
+  );
+}
 
-  if (condition === "attention") {
-    return (
-      <span className="px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-700">
-        🟡 Attention
-      </span>
-    );
-  }
+function LoadingSpinner() {
+  return (
+    <div className="flex flex-col items-center justify-center py-12 space-y-3">
+      <Loader2 className="animate-spin text-indigo-600" size={28} />
+      <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Syncing Feed...</span>
+    </div>
+  );
+}
 
-  if (condition === "critical") {
-    return (
-      <span className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-700">
-        🔴 Critical
-      </span>
-    );
-  }
+function ErrorMessage({ message }) {
+  return (
+    <div className="p-8 bg-rose-50 rounded-[2rem] text-center border-2 border-rose-100">
+      <p className="text-rose-600 font-black text-xs uppercase">{message}</p>
+    </div>
+  );
+}
 
-  return <span className="text-gray-400">—</span>;
+function EmptyRecordsState() {
+  return (
+    <div className="bg-slate-50/50 border-2 border-dashed border-slate-200 p-10 rounded-[3rem] text-center">
+      <Inbox className="mx-auto text-slate-300 mb-3" size={32} />
+      <p className="text-slate-400 font-bold text-sm">No activity recorded today.</p>
+    </div>
+  );
 }
