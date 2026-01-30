@@ -6,65 +6,104 @@ import { useRouter } from "next/navigation";
 
 export default function SignupPage() {
   const router = useRouter();
-
-  const [activeTab, setActiveTab] = useState("email");
+  const [tab, setTab] = useState("email");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Email signup
+  // common fields
+  const [name, setName] = useState("");
+  const [place, setPlace] = useState("");
+  const [age, setAge] = useState("");
+
+  // email signup
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // OTP signup
+  // phone signup
   const [phone, setPhone] = useState("");
 
-  /* ---------- EMAIL SIGNUP ---------- */
+  /* ---------------- EMAIL SIGNUP ---------------- */
   const handleEmailSignup = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
+    setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: { name }, // goes to raw_user_meta_data
+        emailRedirectTo: `${location.origin}/api/auth/callback`,
+      },
     });
 
-    setLoading(false);
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+      return;
+    }
 
-    if (error) setError(error.message);
-    else router.push("/login");
+    // update profile table
+    await supabase.from("profiles").update({
+      name,
+      place,
+      age,
+      phone: null,
+    }).eq("id", data.user.id);
+
+    setLoading(false);
+    router.replace("/login");
   };
 
-  /* ---------- OTP SIGNUP ---------- */
-  const handleOtpSignup = async (e) => {
+  /* ---------------- PHONE OTP SIGNUP ---------------- */
+  const handlePhoneSignup = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
+    setLoading(true);
+
+    if (!phone.startsWith("+")) {
+      setError("Phone must include country code (e.g. +91)");
+      setLoading(false);
+      return;
+    }
 
     const { error } = await supabase.auth.signInWithOtp({
       phone,
+      options: {
+        data: { name },
+      },
     });
 
-    setLoading(false);
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+      return;
+    }
 
-    if (error) setError(error.message);
-    else router.push("/verify");
+    // save temporary data locally (used after OTP verify)
+    localStorage.setItem(
+      "signup_profile",
+      JSON.stringify({ name, place, age, phone })
+    );
+
+    setLoading(false);
+    router.replace("/verify");
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-md bg-white p-6 rounded-xl shadow">
+      <div className="w-full max-w-md bg-white rounded-xl shadow p-6">
 
         <h1 className="text-2xl font-bold text-center mb-4">
-          Create your Caresora account
+          Create Account
         </h1>
 
         {/* Tabs */}
         <div className="flex border-b mb-4">
           <button
-            onClick={() => setActiveTab("email")}
+            onClick={() => setTab("email")}
             className={`flex-1 py-2 ${
-              activeTab === "email"
+              tab === "email"
                 ? "border-b-2 border-blue-600 text-blue-600"
                 : "text-gray-500"
             }`}
@@ -72,62 +111,96 @@ export default function SignupPage() {
             Email
           </button>
           <button
-            onClick={() => setActiveTab("otp")}
+            onClick={() => setTab("phone")}
             className={`flex-1 py-2 ${
-              activeTab === "otp"
+              tab === "phone"
                 ? "border-b-2 border-blue-600 text-blue-600"
                 : "text-gray-500"
             }`}
           >
-            OTP
+            Phone
           </button>
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 mb-3 text-center">{error}</p>
+          <p className="text-red-600 text-sm text-center mb-3">
+            {error}
+          </p>
         )}
 
-        {/* EMAIL SIGNUP */}
-        {activeTab === "email" && (
-          <form onSubmit={handleEmailSignup} className="space-y-4">
+        {/* Common Fields */}
+        <div className="space-y-3 mb-4">
+          <input
+            required
+            placeholder="Full Name"
+            className="w-full border px-3 py-2 rounded"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+
+          <input
+            placeholder="Place / Village"
+            className="w-full border px-3 py-2 rounded"
+            value={place}
+            onChange={(e) => setPlace(e.target.value)}
+          />
+
+          <input
+            type="number"
+            placeholder="Age"
+            className="w-full border px-3 py-2 rounded"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+          />
+        </div>
+
+        {/* Email Signup */}
+        {tab === "email" && (
+          <form onSubmit={handleEmailSignup} className="space-y-3">
             <input
               type="email"
               required
-              placeholder="you@example.com"
+              placeholder="Email"
+              className="w-full border px-3 py-2 rounded"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border px-3 py-2 rounded-md"
             />
 
             <input
               type="password"
               required
               placeholder="Password"
+              className="w-full border px-3 py-2 rounded"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border px-3 py-2 rounded-md"
             />
 
-            <button className="w-full bg-blue-600 text-white py-2 rounded-md">
-              Sign up with Email
+            <button
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2 rounded"
+            >
+              {loading ? "Creating..." : "Sign up with Email"}
             </button>
           </form>
         )}
 
-        {/* OTP SIGNUP */}
-        {activeTab === "otp" && (
-          <form onSubmit={handleOtpSignup} className="space-y-4">
+        {/* Phone Signup */}
+        {tab === "phone" && (
+          <form onSubmit={handlePhoneSignup} className="space-y-3">
             <input
               type="tel"
               required
               placeholder="+91XXXXXXXXXX"
+              className="w-full border px-3 py-2 rounded"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full border px-3 py-2 rounded-md"
             />
 
-            <button className="w-full bg-blue-600 text-white py-2 rounded-md">
-              Sign up with OTP
+            <button
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2 rounded"
+            >
+              {loading ? "Sending OTP..." : "Sign up with Phone"}
             </button>
           </form>
         )}
