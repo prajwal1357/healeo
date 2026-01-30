@@ -31,7 +31,7 @@ export default function WorkerMedicalRecords() {
     symptoms,
     condition,
     created_at,
-    patient:users!worker_patient_records_patient_id_fkey (
+    patient:app_users!worker_patient_records_patient_id_fkey (
       id,
       name
     )

@@ -13,14 +13,14 @@ export default function AdminDashboard() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchapp_users = async () => {
       const { data, error } = await supabase
-        .from("users")
+        .from("app_users")
         .select("role");
 
       if (error) {
         console.error(error);
-        setError("Failed to fetch users");
+        setError("Failed to fetch app_users");
         return;
       }
 
@@ -31,7 +31,7 @@ export default function AdminDashboard() {
       });
     };
 
-    fetchUsers();
+    fetchapp_users();
   }, []);
 
   if (error) {
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
       <div>
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
         <p className="text-sm text-gray-600">
-          Overview of users and roles
+          Overview of app_users and roles
         </p>
       </div>
 
@@ -55,9 +55,9 @@ export default function AdminDashboard() {
         <Card title="Helpers" value={counts.helper} />
       </div>
 
-      {/* Users Table */}
+      {/* app_users Table */}
       <section>
-        <h2 className="text-lg font-semibold mb-2">All Users</h2>
+        <h2 className="text-lg font-semibold mb-2">All app_users</h2>
         <UserCards />
       </section>
     </div>

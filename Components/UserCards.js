@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 
 export default function UserCards() {
-  const [users, setUsers] = useState([]);
+  const [app_users, setapp_users] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchapp_users = async () => {
       const { data, error } = await supabase
-        .from("users")
+        .from("app_users")
         .select("id, name, age, email, role, village, created_at")
         .order("created_at", { ascending: false });
 
@@ -20,19 +20,19 @@ export default function UserCards() {
 
       if (error) {
         console.error(error);
-        setError("Failed to fetch users");
+        setError("Failed to fetch app_users");
       } else {
-        setUsers(data);
+        setapp_users(data);
       }
 
       setLoading(false);
     };
 
-    fetchUsers();
+    fetchapp_users();
   }, []);
 
   if (loading) {
-    return <p className="text-sm text-gray-500">Loading users...</p>;
+    return <p className="text-sm text-gray-500">Loading app_users...</p>;
   }
 
   if (error) {
@@ -54,7 +54,7 @@ export default function UserCards() {
         </thead>
 
         <tbody>
-          {users.map((user) => (
+          {app_users.map((user) => (
             <tr
               key={user.id}
               className="border-b last:border-0 hover:bg-gray-50"
@@ -75,9 +75,9 @@ export default function UserCards() {
         </tbody>
       </table>
 
-      {users.length === 0 && (
+      {app_users.length === 0 && (
         <p className="text-center text-sm text-gray-500 py-4">
-          No users found
+          No app_users found
         </p>
       )}
     </div>

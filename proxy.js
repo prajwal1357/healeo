@@ -40,22 +40,22 @@ export async function proxy(request) {
   const url = new URL(request.url);
   const nextPath = url.pathname;
 
-  // 1. Redirect unauthenticated users to login if they try to access a protected route
+  // 1. Redirect unauthenticated app_users to login if they try to access a protected route
   if (!user && nextPath.startsWith("/dashboard")) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
   if (user) {
-    // 2. Fetch user role from the 'users' table
+    // 2. Fetch user role from the 'app_users' table
     const { data: userData } = await supabase
-      .from("users")
+      .from("app_users")
       .select("role")
       .eq("id", user.id)
       .single();
 
     const role = userData?.role;
 
-    // 3. Prevent logged-in users from visiting login/signup
+    // 3. Prevent logged-in app_users from visiting login/signup
     if (nextPath === "/login" || nextPath === "/signup" || nextPath === "/") {
       if (role) {
         return NextResponse.redirect(new URL(`/dashboard/${role}`, request.url));

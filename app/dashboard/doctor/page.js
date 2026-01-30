@@ -16,8 +16,8 @@ export default function DoctorDashboard() {
   /* ---------------- FETCH STATS ---------------- */
   useEffect(() => {
     const fetchStats = async () => {
-      const { count: workers } = await supabase.from("users").select("*", { count: "exact", head: true }).eq("role", "worker");
-      const { count: patients } = await supabase.from("users").select("*", { count: "exact", head: true }).eq("role", "patient");
+      const { count: workers } = await supabase.from("app_users").select("*", { count: "exact", head: true }).eq("role", "worker");
+      const { count: patients } = await supabase.from("app_users").select("*", { count: "exact", head: true }).eq("role", "patient");
       const { data: recordsData } = await supabase.from("worker_patient_records").select("patient_id");
       const uniquePatients = new Set((recordsData || []).map((r) => r.patient_id));
 
@@ -39,7 +39,7 @@ export default function DoctorDashboard() {
     const fetchResults = async () => {
       const role = activeTab === "patients" ? "patient" : "worker";
       const { data } = await supabase
-        .from("users")
+        .from("app_users")
         .select("id, name, role, worker_checked, doctor_checked, doctor_message")
         .eq("role", role)
         .ilike("name", `%${search}%`)
@@ -69,7 +69,7 @@ export default function DoctorDashboard() {
     if (user.role === "worker") {
       const { data } = await supabase
         .from("worker_patient_records")
-        .select(`id, created_at, patient:users!worker_patient_records_patient_id_fkey (name)`)
+        .select(`id, created_at, patient:app_users!worker_patient_records_patient_id_fkey (name)`)
         .eq("worker_id", user.id);
       setRecords(data || []);
     }
@@ -79,7 +79,7 @@ export default function DoctorDashboard() {
     if (!selectedUser) return;
     setSavingReview(true);
     const { error } = await supabase
-      .from("users")
+      .from("app_users")
       .update({ doctor_checked: true, doctor_message: doctorMessage })
       .eq("id", selectedUser.id);
 

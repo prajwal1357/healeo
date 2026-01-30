@@ -23,37 +23,54 @@ export default function SignupPage() {
   const [phone, setPhone] = useState("");
 
   /* ---------------- EMAIL SIGNUP ---------------- */
-  const handleEmailSignup = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+const handleEmailSignup = async (e) => {
+  e.preventDefault();
+  setError("");
+  setLoading(true);
 
-    const { data, error } = await supabase.auth.signUp({
+  const { data, error: authError } = await supabase.auth.signUp({
+    email,
+    password,
+  });
+
+  if (authError || !data?.user) {
+    setError(authError?.message || "Signup failed");
+    setLoading(false);
+    return;
+  }
+
+  const userId = data.user.id;
+
+  // app_users
+  const { error: userError } = await supabase
+    .from("app_users")
+    .insert({
+      id: userId,
+      name,
       email,
-      password,
-      options: {
-        data: { name }, // goes to raw_user_meta_data
-        emailRedirectTo: `${location.origin}/api/auth/callback`,
-      },
+      age: age ? Number(age) : null,
+      village: place || null,
+      role: "patient",
     });
 
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-      return;
-    }
-
-    // update profile table
-    await supabase.from("profiles").update({
-      name,
-      place,
-      age,
-      phone: null,
-    }).eq("id", data.user.id);
-
+  if (userError) {
+    setError(userError.message);
     setLoading(false);
-    router.replace("/login");
-  };
+    return;
+  }
+
+  // patients
+  await supabase.from("patients").insert({
+    user_id: userId,
+    age: age ? Number(age) : null,
+  });
+
+  setLoading(false);
+  router.replace("/login");
+};
+
+
+
 
   /* ---------------- PHONE OTP SIGNUP ---------------- */
   const handlePhoneSignup = async (e) => {

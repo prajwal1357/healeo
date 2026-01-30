@@ -27,7 +27,7 @@ export default function WorkerDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       const workerId = "demo-worker-id"; 
-      const { count: totalPatients } = await supabase.from("users").select("*", { count: "exact", head: true }).eq("role", "patient");
+      const { count: totalPatients } = await supabase.from("app_users").select("*", { count: "exact", head: true }).eq("role", "patient");
       const { count: docsUploaded } = await supabase.from("worker_patient_records").select("*", { count: "exact", head: true }).eq("worker_id", workerId);
       
       setStats({
@@ -46,7 +46,7 @@ export default function WorkerDashboard() {
 
     setIsLoading(true);
     const { data, error } = await supabase
-      .from("users")
+      .from("app_users")
       .select("id, name")
       .eq("role", "patient")
       .ilike("name", `${search}%`)
@@ -106,7 +106,7 @@ export default function WorkerDashboard() {
 
   // 2️⃣ Mark patient as checked by worker
   const { error: statusError } = await supabase
-    .from("users")
+    .from("app_users")
     .update({ worker_checked: true })
     .eq("id", selectedPatient.id);
 

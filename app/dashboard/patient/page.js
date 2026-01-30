@@ -22,7 +22,7 @@ export default function PatientDashboard() {
 
       // 2️⃣ Fetch patient profile
       const { data: patient } = await supabase
-        .from("users")
+        .from("app_users")
         .select(
           "id, name, age, village, worker_checked, doctor_checked, doctor_message"
         )
@@ -40,7 +40,7 @@ export default function PatientDashboard() {
           symptoms,
           condition,
           created_at,
-          worker:users!worker_patient_records_worker_id_fkey (
+          worker:app_users!worker_patient_records_worker_id_fkey (
             name
           )
         `)

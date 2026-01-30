@@ -1,20 +1,127 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+
 export default function DashboardLayout({ children }) {
+  const router = useRouter();
+  const [role, setRole] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  /* ---------------- FETCH USER ROLE ---------------- */
+  useEffect(() => {
+    const fetchRole = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.replace("/login");
+        return;
+      }
+
+      const { data } = await supabase
+        .from("app_users")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      setRole(data?.role);
+    };
+
+    fetchRole();
+  }, [router]);
+
+  if (!role) return null;
+
+  const links = roleBasedLinks[role] || [];
+
   return (
-    <div className="min-h-screen flex bg-gray-100">
+    <div className="min-h-[100vh] flex bg-gray-100">
+      {/* Mobile Overlay */}
+      {menuOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 md:hidden"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r p-4">
-        <h2 className="text-xl font-bold mb-6">Caresora</h2>
+      <aside
+        className={`fixed md:static z-50 bg-white border-r w-64 p-4 h-full
+        transform transition-transform duration-200
+        ${menuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+      >
+        <h2 className="text-xl font-bold mb-6 text-blue-600">
+          Caresora
+        </h2>
 
         <nav className="space-y-3 text-sm">
-          <a href="/dashboard/admin">Admin</a>
-          <a href="/dashboard/doctor">Doctor</a>
-          <a href="/dashboard/worker">Helper</a>
-          <a href="/dashboard/patient">Patient</a>
+          {links.map((link) => (
+            <SidebarLink
+              key={link.href}
+              href={link.href}
+              label={link.label}
+              onClick={() => setMenuOpen(false)}
+            />
+          ))}
         </nav>
       </aside>
 
       {/* Content */}
-      <main className="flex-1 p-6">{children}</main>
+      <div className="flex-1 flex flex-col">
+        {/* Top Bar (Mobile) */}
+        <header className="md:hidden bg-white border-b px-4 py-3 flex justify-between items-center">
+          <button
+            onClick={() => setMenuOpen(true)}
+            className="text-xl"
+          >
+            ☰
+          </button>
+          <span className="font-semibold capitalize">
+            {role} dashboard
+          </span>
+        </header>
+
+        <main className="flex-1 p-6">{children}</main>
+      </div>
     </div>
+  );
+}
+
+/* ---------------- MENU CONFIG ---------------- */
+
+const roleBasedLinks = {
+  admin: [
+    { label: "Dashboard", href: "/dashboard/admin" },
+    { label: "app_users", href: "/dashboard/admin/app_users" },
+    { label: "Reports", href: "/dashboard/admin/reports" },
+  ],
+  doctor: [
+    { label: "Dashboard", href: "/dashboard/doctor" },
+    { label: "Patients", href: "/dashboard/doctor/patients" },
+  ],
+  worker: [
+    { label: "Dashboard", href: "/dashboard/worker" },
+    { label: "Upload Records", href: "/dashboard/worker" },
+  ],
+  patient: [
+    { label: "Dashboard", href: "/dashboard/patient" },
+    { label: "My Records", href: "/dashboard/patient" },
+  ],
+};
+
+/* ---------------- UI COMPONENT ---------------- */
+
+function SidebarLink({ href, label, onClick }) {
+  return (
+    <a
+      href={href}
+      onClick={onClick}
+      className="block px-3 py-2 rounded hover:bg-blue-50 text-gray-700"
+    >
+      {label}
+    </a>
   );
 }

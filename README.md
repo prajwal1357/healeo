@@ -21,7 +21,7 @@ caresora is a comprehensive health tracking system built with a modern tech stac
 
 *   **Digital Health Records:** Securely store and manage vital health metrics such as blood pressure, sugar levels, symptoms, and prescriptions.
 *   **Role-Based Access Control:** Differentiated access levels for patients, doctors, health workers, and administrators, ensuring data privacy and operational efficiency.
-*   **Secure Medical Data:** Implemented with Supabase Row Level Security (RLS) to ensure that users can only access data relevant and permitted to their role.
+*   **Secure Medical Data:** Implemented with Supabase Row Level Security (RLS) to ensure that app_users can only access data relevant and permitted to their role.
 *   **Regular Check-up Scheduling and Reminders:** Automated system for scheduling appointments and sending timely reminders via SMS or WhatsApp, promoting adherence to check-up schedules.
 *   **Offline Data Entry with Sync Support:** Rural health workers can collect data even without internet connectivity, with automatic synchronization when a connection is restored.
 *   **Multilingual, Mobile-First, Low-Bandwidth UI:** An intuitive and accessible user interface optimized for mobile devices and designed to function effectively in low-bandwidth environments.
@@ -40,10 +40,10 @@ caresora follows a modern serverless architecture. The frontend, built with Next
 
 ## Database Schema Overview (High-level)
 
-The database schema is designed to manage users, health records, appointments, and medical documents.
+The database schema is designed to manage app_users, health records, appointments, and medical documents.
 
-*   **`users` table:** Stores user profiles with `id`, `phone_number`, `role` (patient, doctor, health worker, admin).
-*   **`patients` table:** Contains patient-specific information linked to the `users` table.
+*   **`app_users` table:** Stores user profiles with `id`, `phone_number`, `role` (patient, doctor, health worker, admin).
+*   **`patients` table:** Contains patient-specific information linked to the `app_users` table.
 *   **`health_records` table:** Stores health metrics like `bp`, `sugar`, `symptoms`, `prescription_details`, linked to a `patient_id`.
 *   **`appointments` table:** Manages `appointment_date`, `time`, `patient_id`, `doctor_id`, `status`.
 *   **`medical_documents` table:** Stores references to files in Supabase Storage, linked to `patient_id`.
@@ -129,7 +129,7 @@ On-ground healthcare staff (e.g., ASHA workers, nurses, community health workers
 System administrators responsible for managing the platform.
 
 **What they can do:**
-- Manage users and roles
+- Manage app_users and roles
 - Monitor system usage and coverage
 - Ensure data integrity and compliance
 - Oversee clinics and health workers
