@@ -28,12 +28,10 @@ export async function middleware(req) {
 
   const path = req.nextUrl.pathname;
 
-  // 🔒 Protect dashboard
   if (path.startsWith("/dashboard") && !user) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // 🚫 Prevent logged-in users from visiting auth pages
   if ((path === "/login" || path === "/signup") && user) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
