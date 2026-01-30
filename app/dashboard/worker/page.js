@@ -78,19 +78,19 @@ export default function WorkerDashboard() {
 
   const {
     data: { user },
-    error: authError,
   } = await supabase.auth.getUser();
 
-  if (authError || !user) {
+  if (!user) {
     alert("Not authenticated");
     return;
   }
 
-  const { error } = await supabase
+  // 1️⃣ Insert medical record
+  const { error: recordError } = await supabase
     .from("worker_patient_records")
     .insert({
       patient_id: selectedPatient.id,
-      worker_id: user.id, // ✅ REAL WORKER ID
+      worker_id: user.id,
       bp: form.bp,
       sugar: form.sugar,
       weight: form.weight,
@@ -98,15 +98,27 @@ export default function WorkerDashboard() {
       condition: form.condition,
     });
 
-  if (error) {
-    console.error(error);
-    alert(error.message);
+  if (recordError) {
+    console.error(recordError);
+    alert(recordError.message);
+    return;
+  }
+
+  // 2️⃣ Mark patient as checked by worker
+  const { error: statusError } = await supabase
+    .from("users")
+    .update({ worker_checked: true })
+    .eq("id", selectedPatient.id);
+
+  if (statusError) {
+    console.error(statusError);
+    alert(statusError.message);
     return;
   }
 
   alert("Medical data saved successfully!");
 
-  // Reset state
+  // Reset UI
   setForm({
     bp: "",
     sugar: "",
@@ -117,8 +129,8 @@ export default function WorkerDashboard() {
   });
   setSelectedPatient(null);
   setSearch("");
-  setDocuments([]);
 };
+
 
 
   return (
