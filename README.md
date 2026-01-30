@@ -1,36 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Healeo: Affordable Health Tracking for Rural Areas
 
-## Getting Started
+Healeo is a web application designed to democratize access to healthcare by providing an affordable and efficient health tracking system for rural communities. It focuses on promoting regular medical check-ups and maintaining digital health records for patients, while empowering doctors and health workers with the tools they need.
 
-First, run the development server:
+## Problem Statement and Motivation
+
+In many rural areas, access to consistent healthcare and the maintenance of personal health records remain significant challenges. Patients often lack a centralized system to track their health metrics, symptoms, and prescriptions, leading to fragmented care. Health workers face difficulties in efficient data collection and management, especially in low-connectivity environments. Healeo aims to bridge this gap by providing a robust, accessible, and secure platform that addresses these critical needs.
+
+## Solution Overview
+
+Healeo is a comprehensive health tracking system built with a modern tech stack, offering a user-friendly interface for patients, and powerful tools for healthcare providers. It features secure digital health records, a robust scheduling and reminder system, and crucial offline capabilities for health workers, all secured by role-based access control and advanced database security.
+
+## Key Features
+
+*   **Digital Health Records:** Securely store and manage vital health metrics such as blood pressure, sugar levels, symptoms, and prescriptions.
+*   **Role-Based Access Control:** Differentiated access levels for patients, doctors, health workers, and administrators, ensuring data privacy and operational efficiency.
+*   **Secure Medical Data:** Implemented with Supabase Row Level Security (RLS) to ensure that users can only access data relevant and permitted to their role.
+*   **Regular Check-up Scheduling and Reminders:** Automated system for scheduling appointments and sending timely reminders via SMS or WhatsApp, promoting adherence to check-up schedules.
+*   **Offline Data Entry with Sync Support:** Rural health workers can collect data even without internet connectivity, with automatic synchronization when a connection is restored.
+*   **Multilingual, Mobile-First, Low-Bandwidth UI:** An intuitive and accessible user interface optimized for mobile devices and designed to function effectively in low-bandwidth environments.
+*   **Secure Storage for Medical Reports and Prescriptions:** Utilizes Supabase Storage for encrypted and secure storage of sensitive documents.
+
+## Tech Stack
+
+*   **Frontend:** Next.js (App Router), React, Tailwind CSS
+*   **Backend:** Supabase (PostgreSQL Database, Authentication, Storage, Row Level Security, Edge Functions)
+*   **Authentication:** Phone Number One-Time Password (OTP)
+*   **Deployment:** Vercel (Frontend), Supabase (Backend)
+
+## System Architecture Overview
+
+Healeo follows a modern serverless architecture. The frontend, built with Next.js, is deployed on Vercel, providing fast and scalable serving of the user interface. The backend leverages Supabase, utilizing its PostgreSQL database for data storage, Supabase Auth for user authentication via phone number OTP, and Supabase Storage for secure handling of medical reports. Supabase Edge Functions can be used for custom backend logic and integrations (e.g., SMS/WhatsApp reminders). Row Level Security is meticulously configured to enforce data access policies directly at the database level.
+
+## Database Schema Overview (High-level)
+
+The database schema is designed to manage users, health records, appointments, and medical documents.
+
+*   **`users` table:** Stores user profiles with `id`, `phone_number`, `role` (patient, doctor, health worker, admin).
+*   **`patients` table:** Contains patient-specific information linked to the `users` table.
+*   **`health_records` table:** Stores health metrics like `bp`, `sugar`, `symptoms`, `prescription_details`, linked to a `patient_id`.
+*   **`appointments` table:** Manages `appointment_date`, `time`, `patient_id`, `doctor_id`, `status`.
+*   **`medical_documents` table:** Stores references to files in Supabase Storage, linked to `patient_id`.
+*   **`roles` table:** Defines different user roles and their permissions.
+
+## Authentication & Security
+
+Healeo employs phone number OTP for user authentication, providing a streamlined and secure login experience. A critical aspect of the application's security is **Supabase Row Level Security (RLS)**. RLS is implemented on all sensitive tables (e.g., `health_records`, `medical_documents`) to ensure that:
+
+*   Patients can only view and manage their own health records.
+*   Doctors can access the records of their assigned patients.
+*   Health workers can access records for patients in their designated areas.
+*   Administrators have broader oversight but with strict auditing.
+
+This granular control at the database level prevents unauthorized data access, even if application-level security layers were to be compromised.
+
+## Setup & Installation Steps
+
+To set up Healeo locally, follow these steps:
+
+1.  **Clone the repository:**
+    ```bash
+    git clone [your-repository-url]
+    cd healeo
+    ```
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+3.  **Set up Supabase:**
+    *   Create a new project on [Supabase](https://supabase.com/).
+    *   Obtain your `SUPABASE_URL` and `SUPABASE_ANON_KEY` from your project settings.
+    *   Set up your database schema as outlined in the "Database Schema Overview" section. Refer to the Supabase documentation for detailed instructions on creating tables and setting up RLS policies.
+    *   Enable Phone Auth in Supabase Authentication settings.
+
+## Environment Variables
+
+Create a `.env.local` file in the root of your project and add the following environment variables:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=YOUR_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+```
+Replace `YOUR_SUPABASE_URL` and `YOUR_SUPABASE_ANON_KEY` with your actual Supabase project credentials.
+
+## Running the Project Locally
+
+After setting up your environment variables and installing dependencies, you can run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Deployment Instructions
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Healeo is designed for seamless deployment with Vercel for the frontend and Supabase for the backend.
 
-## Learn More
+1.  **Vercel Deployment (Frontend):**
+    *   Push your code to a Git repository (e.g., GitHub, GitLab, Bitbucket).
+    *   Connect your repository to Vercel. Vercel will automatically detect the Next.js project.
+    *   Add your `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` as environment variables in your Vercel project settings.
+    *   Vercel will build and deploy your application.
 
-To learn more about Next.js, take a look at the following resources:
+2.  **Supabase Deployment (Backend):**
+    *   Your Supabase project is already deployed as part of your initial setup. Ensure your database schema and RLS policies are correctly configured.
+    *   For any Supabase Edge Functions, deploy them using the Supabase CLI.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Future Enhancements
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+*   Integration with external health devices (e.g., blood pressure monitors, glucose meters).
+*   Advanced data analytics and reporting for healthcare providers.
+*   Telemedicine integration for remote consultations.
+*   AI-powered symptom checker and preliminary diagnosis assistance.
+*   Enhanced notification system with push notifications.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
