@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import { 
   HeartHandshake, 
@@ -14,8 +15,10 @@ import {
   CloudLightning,
   MapPin,
   Smartphone,
-  Info
+  Info,
+  Link
 } from "lucide-react";
+import { redirect } from "next/navigation";
 
 /**
  * Custom Image component to handle loading fallbacks
@@ -53,9 +56,9 @@ export default function App() {
             <NavLink href="#about">About</NavLink>
             <NavLink href="#benefits">Benefits</NavLink>
             <NavLink href="#faq">FAQ</NavLink>
-            <button className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95">
+            <a href="/login"><button  className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95">
               Launch Dashboard
-            </button>
+            </button></a>
           </div>
 
           <button className="md:hidden p-2 text-slate-600" onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -69,13 +72,13 @@ export default function App() {
             <NavLink href="#about" mobile onClick={() => setIsMenuOpen(false)}>About</NavLink>
             <NavLink href="#benefits" mobile onClick={() => setIsMenuOpen(false)}>Benefits</NavLink>
             <NavLink href="#faq" mobile onClick={() => setIsMenuOpen(false)}>FAQ</NavLink>
-            <button className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold">Launch Dashboard</button>
+            <a href="/login"><button className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold">Launch Dashboard</button></a>
           </div>
         )}
       </nav>
 
       {/* --- HERO SECTION --- */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+      <section className="relative pt-20 pb-20 lg:pt-10 lg:pb-32 overflow-hidden">
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-[500px] h-[500px] bg-indigo-50 rounded-full blur-3xl opacity-60" />
         <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-[400px] h-[400px] bg-emerald-50 rounded-full blur-3xl opacity-60" />
 
@@ -91,12 +94,12 @@ export default function App() {
               Caresora is a clinical dashboard designed for the last mile, enabling field workers to collect data and doctors to triage care in underserved areas.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 hover:-translate-y-1">
+              <a href="/login"><button className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 hover:-translate-y-1">
                 Get Started <ArrowRight size={20} />
-              </button>
-              <button className="flex items-center justify-center gap-2 bg-white border-2 border-slate-100 text-slate-700 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-slate-50 transition-all">
+              </button></a>
+              <a href="#about"><button className="flex items-center justify-center gap-2 bg-white border-2 border-slate-100 text-slate-700 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-slate-50 transition-all">
                 Learn More
-              </button>
+              </button></a>
             </div>
           </div>
 
@@ -138,7 +141,7 @@ export default function App() {
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div className="relative group">
               <SafeImage 
-                src="https://images.unsplash.com/photo-1586773860418-d37222d8fce2?auto=format&fit=crop&q=80&w=2073" 
+                src="https://content.jdmagicbox.com/v2/comp/hyderabad/i3/040pxx40.xx40.241009221012.z3i3/catalogue/yousufain-health-care-clinic-indira-gandhi-puram-hyderabad-hospitals-mpta3ne3vd.jpg" 
                 alt="Rural health clinic" 
                 className="rounded-[3rem] shadow-2xl relative z-10 grayscale hover:grayscale-0 transition-all duration-700"
               />
@@ -251,14 +254,13 @@ export default function App() {
           <div className="space-y-4">
             <h4 className="font-bold uppercase text-[10px] tracking-[0.2em] text-indigo-400">Platform</h4>
             <FooterLink>Dashboard</FooterLink>
-            <FooterLink>Mobile App</FooterLink>
-            <FooterLink>Security</FooterLink>
+            <FooterLink>Benifits</FooterLink>
           </div>
           <div className="space-y-4">
             <h4 className="font-bold uppercase text-[10px] tracking-[0.2em] text-indigo-400">Company</h4>
             <FooterLink>About Us</FooterLink>
             <FooterLink>Contact</FooterLink>
-            <FooterLink>Privacy Policy</FooterLink>
+            <FooterLink>FAQ</FooterLink>
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-6 pt-20 border-t border-slate-800 mt-20 text-center text-slate-500 text-sm">
@@ -274,12 +276,12 @@ export default function App() {
 function NavLink({ href, children, mobile, onClick }) {
   return (
     <a 
-      href={href} 
-      onClick={onClick}
-      className={text-slate-600 font-bold hover:text-indigo-600 transition-colors ${mobile ? "block text-xl" : "text-sm"}}
-    >
-      {children}
-    </a>
+  href={href} 
+  onClick={onClick}
+  className={`text-slate-600 font-bold hover:text-indigo-600 transition-colors ${mobile ? "block text-xl" : "text-sm"}`}
+>
+  {children}
+</a>
   );
 }
 
@@ -330,7 +332,7 @@ function FaqItem({ question, answer }) {
         className="w-full px-6 py-5 flex items-center justify-between text-left transition-colors hover:bg-slate-50"
       >
         <span className="font-bold text-slate-900">{question}</span>
-        <ChevronDown size={20} className={text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}} />
+        <ChevronDown size={20} className={`text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
       {isOpen && (
         <div className="px-6 pb-5 animate-in fade-in slide-in-from-top-2 duration-300">
