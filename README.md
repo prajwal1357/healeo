@@ -20,7 +20,7 @@ caresora is a comprehensive health tracking system built with a modern tech stac
 ## Key Features
 
 *   **Digital Health Records:** Securely store and manage vital health metrics such as blood pressure, sugar levels, symptoms, and prescriptions.
-*   **Role-Based Access Control:** Differentiated access levels for patients, doctors, health workers, and administrators, ensuring data privacy and operational efficiency.
+*   **role-Based Access Control:** Differentiated access levels for patients, doctors, health workers, and administrators, ensuring data privacy and operational efficiency.
 *   **Secure Medical Data:** Implemented with Supabase Row Level Security (RLS) to ensure that app_users can only access data relevant and permitted to their role.
 *   **Regular Check-up Scheduling and Reminders:** Automated system for scheduling appointments and sending timely reminders via SMS or WhatsApp, promoting adherence to check-up schedules.
 *   **Offline Data Entry with Sync Support:** Rural health workers can collect data even without internet connectivity, with automatic synchronization when a connection is restored.
@@ -60,7 +60,7 @@ caresora employs phone number OTP for user authentication, providing a streamlin
 
 This granular control at the database level prevents unauthorized data access, even if application-level security layers were to be compromised.
 
-## 👥 User Roles & System Interaction
+## 👥 User roles & System Interaction
 
 caresora is designed around a **multi-user healthcare ecosystem** to ensure regular medical check-ups and continuous health monitoring, especially in rural areas.
 

@@ -2,32 +2,18 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 
 export async function proxy(request) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  });
+  const response = NextResponse.next();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value)
-          );
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
+        getAll: () => request.cookies.getAll(),
+        setAll: (cookies) => {
+          cookies.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
           });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
         },
       },
     }
@@ -37,38 +23,51 @@ export async function proxy(request) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const url = new URL(request.url);
-  const nextPath = url.pathname;
+  const { pathname } = request.nextUrl;
 
-  // 1. Redirect unauthenticated app_users to login if they try to access a protected route
-  if (!user && nextPath.startsWith("/dashboard")) {
+  const isAuthPage =
+    pathname === "/" ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup");
+
+  /* ---------------- NOT LOGGED IN ---------------- */
+  if (!user && pathname.startsWith("/dashboard")) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
+  /* ---------------- LOGGED IN ---------------- */
   if (user) {
-    // 2. Fetch user role from the 'app_users' table
-    const { data: userData } = await supabase
+    const { data: appUser, error } = await supabase
       .from("app_users")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    const role = userData?.role;
-
-    // 3. Prevent logged-in app_users from visiting login/signup
-    if (nextPath === "/login" || nextPath === "/signup" || nextPath === "/") {
-      if (role) {
-        return NextResponse.redirect(new URL(`/dashboard/${role}`, request.url));
-      }
+    if (error || !appUser?.role) {
+      console.error("No role found for user:", user.id);
+      return NextResponse.redirect(new URL("/login", request.url));
     }
 
-    // 4. Role-based route protection
-    if (nextPath.startsWith("/dashboard")) {
-      const allowedPath = `/dashboard/${role}`;
-      
-      // If user tries to access a dashboard that doesn't belong to their role
-      if (!nextPath.startsWith(allowedPath)) {
-        return NextResponse.redirect(new URL(allowedPath, request.url));
+    const role = appUser.role;
+
+    const roleRoutes = {
+      admin: "/dashboard/admin",
+      doctor: "/dashboard/doctor",
+      worker: "/dashboard/worker",
+      patient: "/dashboard/patient",
+    };
+
+    const allowedBase = roleRoutes[role];
+
+    // Logged-in users should not access auth pages
+    if (isAuthPage) {
+      return NextResponse.redirect(new URL(allowedBase, request.url));
+    }
+
+    // Enforce role-based dashboard access
+    if (pathname.startsWith("/dashboard")) {
+      if (!pathname.startsWith(allowedBase)) {
+        return NextResponse.redirect(new URL(allowedBase, request.url));
       }
     }
   }
@@ -78,13 +77,6 @@ export async function proxy(request) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

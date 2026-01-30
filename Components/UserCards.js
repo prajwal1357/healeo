@@ -47,7 +47,7 @@ export default function UserCards() {
             <Th>Name</Th>
             <Th>Age</Th>
             <Th>Email</Th>
-            <Th>Role</Th>
+            <Th>role</Th>
             <Th>Place</Th>
             <Th>Joined</Th>
           </tr>
@@ -64,7 +64,7 @@ export default function UserCards() {
 
               <Td>{user.email || "—"}</Td>
               <Td>
-                <RoleBadge role={user.role} />
+              <Td>{user.role || "—"}</Td>
               </Td>
               <Td>{user.village || "—"}</Td>
               <Td>
@@ -98,7 +98,7 @@ function Td({ children }) {
   return <td className="px-4 py-2">{children}</td>;
 }
 
-function RoleBadge({ role }) {
+function roleBadge({ role }) {
   const styles = {
     admin: "bg-red-100 text-red-700",
     doctor: "bg-blue-100 text-blue-700",

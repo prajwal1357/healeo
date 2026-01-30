@@ -6,12 +6,12 @@ import { useRouter } from "next/navigation";
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
-  const [role, setRole] = useState(null);
+  const [role, setrole] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  /* ---------------- FETCH USER ROLE ---------------- */
+  /* ---------------- FETCH USER role ---------------- */
   useEffect(() => {
-    const fetchRole = async () => {
+    const fetchrole = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -27,10 +27,10 @@ export default function DashboardLayout({ children }) {
         .eq("id", user.id)
         .single();
 
-      setRole(data?.role);
+      setrole(data?.role);
     };
 
-    fetchRole();
+    fetchrole();
   }, [router]);
 
   if (!role) return null;
@@ -60,7 +60,7 @@ export default function DashboardLayout({ children }) {
         <nav className="space-y-3 text-sm">
           {links.map((link) => (
             <SidebarLink
-              key={link.href}
+              key={link.id}
               href={link.href}
               label={link.label}
               onClick={() => setMenuOpen(false)}
@@ -94,23 +94,24 @@ export default function DashboardLayout({ children }) {
 
 const roleBasedLinks = {
   admin: [
-    { label: "Dashboard", href: "/dashboard/admin" },
-    { label: "app_users", href: "/dashboard/admin/app_users" },
-    { label: "Reports", href: "/dashboard/admin/reports" },
+    { id: "admin-dashboard", label: "Dashboard", href: "/dashboard/admin" },
+    { id: "admin-users", label: "Users", href: "/dashboard/admin/app_users" },
+    { id: "admin-reports", label: "Reports", href: "/dashboard/admin/reports" },
   ],
   doctor: [
-    { label: "Dashboard", href: "/dashboard/doctor" },
-    { label: "Patients", href: "/dashboard/doctor/patients" },
+    { id: "doctor-dashboard", label: "Dashboard", href: "/dashboard/doctor" },
+    { id: "doctor-patients", label: "Patients", href: "/dashboard/doctor/patients" },
   ],
   worker: [
-    { label: "Dashboard", href: "/dashboard/worker" },
-    { label: "Upload Records", href: "/dashboard/worker" },
+    { id: "worker-dashboard", label: "Dashboard", href: "/dashboard/worker" },
+    { id: "worker-upload", label: "Upload Records", href: "/dashboard/worker" },
   ],
   patient: [
-    { label: "Dashboard", href: "/dashboard/patient" },
-    { label: "My Records", href: "/dashboard/patient" },
+    { id: "patient-dashboard", label: "Dashboard", href: "/dashboard/patient" },
+    { id: "patient-records", label: "My Records", href: "/dashboard/patient" },
   ],
 };
+
 
 /* ---------------- UI COMPONENT ---------------- */
 
