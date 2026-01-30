@@ -8,7 +8,7 @@ export default function DashboardLayout({ children }) {
         <nav className="space-y-3 text-sm">
           <a href="/dashboard/admin">Admin</a>
           <a href="/dashboard/doctor">Doctor</a>
-          <a href="/dashboard/helper">Helper</a>
+          <a href="/dashboard/worker">Helper</a>
           <a href="/dashboard/patient">Patient</a>
         </nav>
       </aside>
