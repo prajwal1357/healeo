@@ -1,82 +1,108 @@
 "use client";
 
-import { useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase/client";
+import { ShieldCheck, Loader2, ArrowRight, Smartphone, AlertCircle } from "lucide-react";
 
 export default function VerifyOtpPage() {
   const router = useRouter();
-
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [phone, setPhone] = useState("");
 
-  const handleVerifyOtp = async (e) => {
+  useEffect(() => {
+    // Retrieve the phone number stored during the login/signup step
+    const storedData = localStorage.getItem("signup_profile");
+    if (storedData) {
+      const { phone } = JSON.parse(storedData);
+      setPhone(phone);
+    }
+  }, []);
+
+  const handleVerify = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.verifyOtp({
+    const { data, error: verifyError } = await supabase.auth.verifyOtp({
+      phone,
       token: otp,
-      type: "sms",
+      type: 'sms',
     });
 
-    setLoading(false);
-
-    if (error) {
-      setError(error.message);
-    } else {
-      router.push("/dashboard");
+    if (verifyError) {
+      setError(verifyError.message);
+      setLoading(false);
+      return;
     }
+
+    // If this was a new signup, now is the time to create their app_users record
+    const storedData = localStorage.getItem("signup_profile");
+    if (storedData) {
+      const profile = JSON.parse(storedData);
+      
+      // Create user profile in app_users
+      await supabase.from("app_users").insert({
+        id: data.user.id,
+        name: profile.name,
+        village: profile.place,
+        role: "patient" // Default role
+      });
+      
+      localStorage.removeItem("signup_profile");
+    }
+
+    router.replace("/dashboard");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-md p-6">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
+      <div className="w-full max-w-md space-y-8 animate-in fade-in zoom-in-95 duration-500">
+        <div className="text-center space-y-2">
+          <div className="w-16 h-16 bg-indigo-600 rounded-3xl flex items-center justify-center text-white mx-auto shadow-xl shadow-indigo-100 mb-4">
+            <ShieldCheck size={32} />
+          </div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Security Check</h1>
+          <p className="text-slate-500 font-medium italic">We sent a code to {phone || "your phone"}</p>
+        </div>
 
-        {/* Header */}
-        <h1 className="text-2xl font-bold text-center mb-2">
-          Verify OTP
-        </h1>
-        <p className="text-sm text-center text-gray-600 mb-6">
-          Enter the 6-digit code sent to your mobile number
-        </p>
+        <form onSubmit={handleVerify} className="bg-white border border-slate-100 rounded-[2.5rem] p-10 shadow-xl shadow-slate-200/50 space-y-6">
+          {error && (
+            <div className="bg-rose-50 border border-rose-100 p-4 rounded-2xl flex items-center gap-3 text-rose-600 text-sm font-bold">
+              <AlertCircle size={18} /> {error}
+            </div>
+          )}
 
-        {/* Error */}
-        {error && (
-          <p className="text-sm text-red-600 text-center mb-3">{error}</p>
-        )}
-
-        {/* OTP Form */}
-        <form onSubmit={handleVerifyOtp} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              OTP Code
-            </label>
-            <input
-              type="text"
-              inputMode="numeric"
-              maxLength={6}
-              required
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              placeholder="Enter OTP"
-              className="w-full text-center tracking-widest text-lg border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
-            />
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Enter 6-Digit Code</label>
+            <div className="relative">
+              <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+              <input
+                required
+                type="text"
+                placeholder="000000"
+                maxLength={6}
+                className="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 pl-12 pr-4 py-4 rounded-2xl outline-none transition-all text-2xl font-black tracking-[0.5em] text-slate-700"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+              />
+            </div>
           </div>
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-md font-medium hover:bg-blue-700 transition disabled:opacity-50"
+            disabled={loading || otp.length < 6}
+            className="w-full bg-indigo-600 text-white font-black py-5 rounded-[2rem] hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-[0.98] flex items-center justify-center gap-3 text-lg disabled:opacity-50"
           >
-            {loading ? "Verifying..." : "Verify & Continue"}
+            {loading ? <Loader2 className="animate-spin" /> : <ArrowRight size={20} />}
+            {loading ? "Verifying..." : "Verify & Access"}
           </button>
         </form>
-
-        {/* Footer */}
-        <p className="text-xs text-center text-gray-500 mt-4">
-          Didn’t receive the OTP? Please wait a moment and try again.
+        
+        <p className="text-center text-slate-400 text-xs font-bold uppercase tracking-widest">
+          Didn&apos;t get a code? <button className="text-indigo-600 hover:underline">Resend SMS</button>
         </p>
       </div>
     </div>

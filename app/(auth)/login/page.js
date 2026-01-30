@@ -49,28 +49,23 @@ export default function LoginPage() {
 
   /* ---------------- PHONE OTP LOGIN LOGIC ---------------- */
   const handleOtpLogin = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  e.preventDefault();
+  setError("");
+  setLoading(true);
 
-    if (!phone.startsWith("+")) {
-      setError("Please include country code (e.g. +91)");
-      setLoading(false);
-      return;
-    }
+  const { error: otpError } = await supabase.auth.signInWithOtp({ 
+    phone: phone // e.g. "+919876543210"
+  });
 
-    const { error: otpError } = await supabase.auth.signInWithOtp({ 
-      phone 
-    });
-
+  if (otpError) {
+    setError(otpError.message);
     setLoading(false);
-    if (otpError) {
-      setError(otpError.message);
-    } else {
-      // Redirect to your verification code entry page
-      router.push("/verify");
-    }
-  };
+  } else {
+    // Crucial: Store the phone so the /verify page can use it
+    localStorage.setItem("signup_profile", JSON.stringify({ phone }));
+    router.push("/verify");
+  }
+};
 
   return (
     <div className="min-h-screen flex bg-slate-50 font-sans selection:bg-indigo-100">

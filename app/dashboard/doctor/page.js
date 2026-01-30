@@ -91,7 +91,7 @@ export default function DoctorDashboard() {
     if (user.role === "worker") {
       const { data } = await supabase
         .from("worker_patient_records")
-        .select(`id, created_at, patient:app_users!worker_patient_records_patient_id_fkey (name)`)
+        .select(`id, created_at, patient:app_users!worker_patient_records_patient_fkey (name)`)
         .eq("worker_id", user.id);
       setRecords(data || []);
     }

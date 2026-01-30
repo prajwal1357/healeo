@@ -36,7 +36,7 @@ export default function WorkerMedicalRecords() {
         .from("worker_patient_records")
         .select(`
           id, bp, sugar, weight, symptoms, condition, created_at,
-          patient:app_users!worker_patient_records_patient_id_fkey (name)
+          patient:app_users!worker_patient_records_patient_fkey (name)
         `)
         .eq("worker_id", user.id)
         .order("created_at", { ascending: false });

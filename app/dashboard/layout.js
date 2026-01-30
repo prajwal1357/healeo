@@ -96,19 +96,19 @@ const roleBasedLinks = {
   admin: [
     { id: "admin-dashboard", label: "Dashboard", href: "/dashboard/admin" },
     { id: "admin-users", label: "Users", href: "/dashboard/admin/app_users" },
-    { id: "admin-reports", label: "Reports", href: "/dashboard/admin/reports" },
+    { id: "admin-requests", label: "Access Requests", href: "/dashboard/admin/requests" }, // NEW
   ],
   doctor: [
     { id: "doctor-dashboard", label: "Dashboard", href: "/dashboard/doctor" },
-    { id: "doctor-patients", label: "Patients", href: "/dashboard/doctor/patients" },
+    { id: "doctor-messages", label: "Worker Messages", href: "/dashboard/doctor/messages" }, // NEW
   ],
   worker: [
     { id: "worker-dashboard", label: "Dashboard", href: "/dashboard/worker" },
-    { id: "worker-upload", label: "Upload Records", href: "/dashboard/worker" },
+    { id: "worker-messages", label: "Patient Messages", href: "/dashboard/worker/messages" }, // NEW
   ],
   patient: [
     { id: "patient-dashboard", label: "Dashboard", href: "/dashboard/patient" },
-    { id: "patient-records", label: "My Records", href: "/dashboard/patient" },
+    { id: "patient-contact", label: "Contact Worker", href: "/dashboard/patient/contact" }, // NEW
   ],
 };
 
