@@ -1,21 +1,21 @@
-# 🩺 Healeo
+# 🩺 caresora
 
 **Problem Statement ID:** CS02HA  
 **Team Name:** Void Insane  
 **College:** St. Aloysius College  
 
 
-# Healeo: Affordable Health Tracking for Rural Areas
+# caresora: Affordable Health Tracking for Rural Areas
 
-Healeo is a web application designed to democratize access to healthcare by providing an affordable and efficient health tracking system for rural communities. It focuses on promoting regular medical check-ups and maintaining digital health records for patients, while empowering doctors and health workers with the tools they need.
+caresora is a web application designed to democratize access to healthcare by providing an affordable and efficient health tracking system for rural communities. It focuses on promoting regular medical check-ups and maintaining digital health records for patients, while empowering doctors and health workers with the tools they need.
 
 ## Problem Statement and Motivation
 
-In many rural areas, access to consistent healthcare and the maintenance of personal health records remain significant challenges. Patients often lack a centralized system to track their health metrics, symptoms, and prescriptions, leading to fragmented care. Health workers face difficulties in efficient data collection and management, especially in low-connectivity environments. Healeo aims to bridge this gap by providing a robust, accessible, and secure platform that addresses these critical needs.
+In many rural areas, access to consistent healthcare and the maintenance of personal health records remain significant challenges. Patients often lack a centralized system to track their health metrics, symptoms, and prescriptions, leading to fragmented care. Health workers face difficulties in efficient data collection and management, especially in low-connectivity environments. caresora aims to bridge this gap by providing a robust, accessible, and secure platform that addresses these critical needs.
 
 ## Solution Overview
 
-Healeo is a comprehensive health tracking system built with a modern tech stack, offering a user-friendly interface for patients, and powerful tools for healthcare providers. It features secure digital health records, a robust scheduling and reminder system, and crucial offline capabilities for health workers, all secured by role-based access control and advanced database security.
+caresora is a comprehensive health tracking system built with a modern tech stack, offering a user-friendly interface for patients, and powerful tools for healthcare providers. It features secure digital health records, a robust scheduling and reminder system, and crucial offline capabilities for health workers, all secured by role-based access control and advanced database security.
 
 ## Key Features
 
@@ -36,7 +36,7 @@ Healeo is a comprehensive health tracking system built with a modern tech stack,
 
 ## System Architecture Overview
 
-Healeo follows a modern serverless architecture. The frontend, built with Next.js, is deployed on Vercel, providing fast and scalable serving of the user interface. The backend leverages Supabase, utilizing its PostgreSQL database for data storage, Supabase Auth for user authentication via phone number OTP, and Supabase Storage for secure handling of medical reports. Supabase Edge Functions can be used for custom backend logic and integrations (e.g., SMS/WhatsApp reminders). Row Level Security is meticulously configured to enforce data access policies directly at the database level.
+caresora follows a modern serverless architecture. The frontend, built with Next.js, is deployed on Vercel, providing fast and scalable serving of the user interface. The backend leverages Supabase, utilizing its PostgreSQL database for data storage, Supabase Auth for user authentication via phone number OTP, and Supabase Storage for secure handling of medical reports. Supabase Edge Functions can be used for custom backend logic and integrations (e.g., SMS/WhatsApp reminders). Row Level Security is meticulously configured to enforce data access policies directly at the database level.
 
 ## Database Schema Overview (High-level)
 
@@ -51,7 +51,7 @@ The database schema is designed to manage users, health records, appointments, a
 
 ## Authentication & Security
 
-Healeo employs phone number OTP for user authentication, providing a streamlined and secure login experience. A critical aspect of the application's security is **Supabase Row Level Security (RLS)**. RLS is implemented on all sensitive tables (e.g., `health_records`, `medical_documents`) to ensure that:
+caresora employs phone number OTP for user authentication, providing a streamlined and secure login experience. A critical aspect of the application's security is **Supabase Row Level Security (RLS)**. RLS is implemented on all sensitive tables (e.g., `health_records`, `medical_documents`) to ensure that:
 
 *   Patients can only view and manage their own health records.
 *   Doctors can access the records of their assigned patients.
@@ -62,7 +62,7 @@ This granular control at the database level prevents unauthorized data access, e
 
 ## 👥 User Roles & System Interaction
 
-Healeo is designed around a **multi-user healthcare ecosystem** to ensure regular medical check-ups and continuous health monitoring, especially in rural areas.
+caresora is designed around a **multi-user healthcare ecosystem** to ensure regular medical check-ups and continuous health monitoring, especially in rural areas.
 
 The system supports four primary user roles:
 
@@ -154,12 +154,12 @@ This workflow ensures **continuous, preventive, and accessible healthcare**.
 
 ## Setup & Installation Steps
 
-To set up Healeo locally, follow these steps:
+To set up caresora locally, follow these steps:
 
 1.  **Clone the repository:**
     ```bash
     git clone [your-repository-url]
-    cd healeo
+    cd caresora
     ```
 2.  **Install dependencies:**
     ```bash
@@ -193,7 +193,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to see the a
 
 ## Deployment Instructions
 
-Healeo is designed for seamless deployment with Vercel for the frontend and Supabase for the backend.
+caresora is designed for seamless deployment with Vercel for the frontend and Supabase for the backend.
 
 1.  **Vercel Deployment (Frontend):**
     *   Push your code to a Git repository (e.g., GitHub, GitLab, Bitbucket).
