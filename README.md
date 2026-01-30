@@ -1,3 +1,10 @@
+# 🩺 Healeo
+
+**Problem Statement ID:** CS02HA  
+**Team Name:** Void Insane  
+**College:** St. Aloysius College  
+
+
 # Healeo: Affordable Health Tracking for Rural Areas
 
 Healeo is a web application designed to democratize access to healthcare by providing an affordable and efficient health tracking system for rural communities. It focuses on promoting regular medical check-ups and maintaining digital health records for patients, while empowering doctors and health workers with the tools they need.
@@ -52,6 +59,98 @@ Healeo employs phone number OTP for user authentication, providing a streamlined
 *   Administrators have broader oversight but with strict auditing.
 
 This granular control at the database level prevents unauthorized data access, even if application-level security layers were to be compromised.
+
+## 👥 User Roles & System Interaction
+
+Healeo is designed around a **multi-user healthcare ecosystem** to ensure regular medical check-ups and continuous health monitoring, especially in rural areas.
+
+The system supports four primary user roles:
+
+---
+
+### 👤 Patient
+
+**Who they are:**  
+Patients are individuals whose health data is being monitored. They may or may not own a smartphone.
+
+**What they can do:**
+- View their personal health records
+- Receive reminders for regular medical check-ups
+- Access prescriptions and doctor notes
+- Track basic health trends over time
+
+**How they interact with the system:**
+- Log in using phone number OTP
+- View data entered by medical workers or doctors
+- Receive SMS/WhatsApp notifications for upcoming check-ups
+
+---
+
+### 🧑‍⚕️ Doctor
+
+**Who they are:**  
+Certified medical professionals responsible for diagnosis and treatment.
+
+**What they can do:**
+- View assigned patient health histories
+- Add diagnoses and prescriptions
+- Monitor long-term health trends
+- Identify high-risk patients early
+
+**How they interact with the system:**
+- Access patient data securely via role-based permissions
+- Update medical decisions after reviewing collected health records
+- Provide treatment recommendations remotely or during health camps
+
+---
+
+### 🧑‍⚕️ Medical Worker (Health Worker)
+
+**Who they are:**  
+On-ground healthcare staff (e.g., ASHA workers, nurses, community health workers) who operate in rural areas.
+
+**What they can do:**
+- Register new patients
+- Collect basic health vitals during field visits
+- Upload medical reports or prescriptions
+- Work offline and sync data when internet is available
+
+**How they interact with the system:**
+- Use a mobile-friendly interface during village visits
+- Enter health data on behalf of patients
+- Act as a bridge between patients and doctors
+- Ensure patients follow regular check-up schedules
+
+---
+
+### 🛠 Admin
+
+**Who they are:**  
+System administrators responsible for managing the platform.
+
+**What they can do:**
+- Manage users and roles
+- Monitor system usage and coverage
+- Ensure data integrity and compliance
+- Oversee clinics and health workers
+
+**How they interact with the system:**
+- Access analytics dashboards
+- Perform administrative actions securely
+- Maintain smooth system operations
+
+---
+
+## 🔄 Interaction Flow (High-Level)
+
+1. **Medical Worker** visits a village and collects patient vitals  
+2. Data is stored securely in the system (offline if needed)  
+3. **Doctor** reviews health records and adds diagnosis/prescription  
+4. **Patient** receives reminders and views health updates  
+5. System schedules the next check-up automatically  
+
+This workflow ensures **continuous, preventive, and accessible healthcare**.
+
 
 ## Setup & Installation Steps
 
