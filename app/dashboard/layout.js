@@ -87,52 +87,67 @@ export default function DashboardLayout({ children }) {
         
         {/* --- Top Glass Navbar --- */}
         <header className="sticky top-0 z-50 w-full px-6 py-4">
-          <div className="bg-white/70 backdrop-blur-md border border-white/20 shadow-sm rounded-[1.5rem] px-6 py-3 flex items-center justify-between">
-            <button onClick={() => setMenuOpen(true)} className="md:hidden p-2 bg-slate-50 rounded-lg text-slate-600">
-              <Menu size={20} />
-            </button>
-            
-            {/* <div className="hidden md:flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 w-64">
-              <Search size={16} className="text-slate-400" />
-              <input type="text" placeholder="Search..." className="bg-transparent text-sm outline-none w-full" />
-            </div> */}
+  <div className="bg-white/70 backdrop-blur-md border border-white/20 shadow-sm rounded-[1.5rem] px-6 py-3 flex items-center justify-between">
+    
+    {/* LEFT: Mobile Menu Button */}
+    <button onClick={() => setMenuOpen(true)} className="md:hidden p-2 bg-slate-50 rounded-lg text-slate-600">
+      <Menu size={20} />
+    </button>
 
-            <div className="flex items-center gap-4">
-             {/* --- Dynamic Notification Link --- */}
-<Link 
-  href={
-    role === "patient" 
-      ? "/dashboard/patient/contact" 
-      : role === "admin" 
-      ? "/dashboard/admin/requests" 
-      : `/dashboard/${role}/messages`
-  }
->
-  <button className="p-2 text-slate-400 hover:text-indigo-600 transition-colors relative group">
-    <Bell size={20} className="group-hover:rotate-[15deg] transition-transform" />
-    
-    {/* Notification Dot */}
-    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white shadow-sm" />
-    
-    {/* Optional: Hover Tooltip */}
-    <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-bold uppercase tracking-widest">
-      {role === "admin" ? "Requests" : "Messages"}
-    </span>
-  </button>
-</Link>
-              <div className="h-8 w-[1px] bg-slate-200 mx-1" />
-              <div className="flex items-center gap-3">
-                <div className="text-right hidden sm:block">
-                  <p className="text-xs font-black text-slate-900 leading-none capitalize">{role}</p>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Status: Online</p>
-                </div>
-                <div className="w-10 h-10 bg-indigo-100 rounded-xl border border-indigo-200 flex items-center justify-center text-indigo-600 font-black">
-                  {role?.charAt(0).toUpperCase()}
-                </div>
-              </div>
-            </div>
+    {/* MIDDLE: Empty space or search (Hidden on mobile if needed) */}
+    <div className="hidden md:block flex-1" />
+
+    {/* RIGHT: Notifications & Profile */}
+    <div className="flex items-center gap-6 ml-auto">
+      
+      {/* Notification Bell */}
+      <Link 
+        href={
+          role === "patient" 
+            ? "/dashboard/patient/contact" 
+            : role === "admin" 
+            ? "/dashboard/admin/requests" 
+            : `/dashboard/${role}/messages`
+        }
+      >
+        <button className="p-2 text-slate-400 hover:text-indigo-600 transition-colors relative group">
+          <Bell size={20} className="group-hover:rotate-[15deg] transition-transform" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white shadow-sm" />
+        </button>
+      </Link>
+
+      {/* Separator */}
+      <div className="h-8 w-[1px] bg-slate-200/60" />
+
+      {/* Profile & Status Section */}
+      <div className="flex items-center gap-4 pl-2">
+        <div className="text-right hidden sm:block">
+          <p className="text-xs font-black text-slate-900 leading-none capitalize tracking-tight">
+            {role}
+          </p>
+          <div className="flex items-center justify-end gap-1.5 mt-1.5">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+              Live
+            </p>
           </div>
-        </header>
+        </div>
+
+        {/* User Initial Badge */}
+        <div className="relative group cursor-pointer">
+          <div className="w-11 h-11 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl flex items-center justify-center text-white font-black shadow-lg shadow-indigo-100 group-hover:shadow-indigo-200 transition-all active:scale-95 border-2 border-white">
+            {role?.charAt(0).toUpperCase()}
+          </div>
+          {/* Subtle ring decoration */}
+          <div className="absolute -inset-1 border border-indigo-100 rounded-[1.2rem] opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
 
         {/* --- Content --- */}
         <main className="flex-1 p-4 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
