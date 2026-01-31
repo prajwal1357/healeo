@@ -4,6 +4,22 @@
 **Team Name:** Void Insane  
 **College:** St. Aloysius College  
 
+## 🚀 Live Project
+
+🔗 **Live URL:**  
+*https://caresora.prajwaldev.online*
+
+> This is the deployed production version of the application, running with Supabase Edge Functions and automated reporting.
+
+---
+
+## 📊 Project Presentation (PPT)
+
+📽 **Presentation Deck:**  
+https://your-ppt-link.com
+
+> The PPT explains the problem statement, system architecture, tech stack, Edge Function workflow and offline form submitting using idb
+
 
 # caresora: Affordable Health Tracking for Rural Areas
 
@@ -99,6 +115,7 @@ Certified medical professionals responsible for diagnosis and treatment.
 
 **How they interact with the system:**
 - Access patient data securely via role-based permissions
+- AI summarizes data based on user data
 - Update medical decisions after reviewing collected health records
 - Provide treatment recommendations remotely or during health camps
 
@@ -117,6 +134,7 @@ On-ground healthcare staff (e.g., ASHA workers, nurses, community health workers
 
 **How they interact with the system:**
 - Use a mobile-friendly interface during village visits
+- can upload data without internet which will sync when network is availabe
 - Enter health data on behalf of patients
 - Act as a bridge between patients and doctors
 - Ensure patients follow regular check-up schedules
