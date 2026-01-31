@@ -171,7 +171,7 @@ const roleBasedLinks = {
   ],
   worker: [
     { id: "wrk-db", label: "Worker Portal", href: "/dashboard/worker", icon: <LayoutDashboard size={20}/> },
-    { id: "wrk-msg", label: "Patient Messages", href: "/dashboard/worker/messages", icon: <MessageSquare size={20}/> },
+    { id: "wrk-msg", label: "Messages", href: "/dashboard/worker/messages", icon: <MessageSquare size={20}/> },
   ],
   patient: [
     { id: "pat-db", label: "My Health Status", href: "/dashboard/patient", icon: <UserCircle size={20}/> },

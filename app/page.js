@@ -87,7 +87,7 @@ export default function App() {
             <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full text-sm font-bold border border-indigo-100">
               <Zap size={16} /> <span>Digitizing Global Health Frontiers</span>
             </div>
-            <h1 className="text-5xl lg:text-7xl font-black text-slate-900 leading-[1.1] tracking-tight">
+            <h1 className="text-5xl  lg:text-7xl font-black text-slate-900 leading-[1.1] tracking-tight">
               Bridging the gap in <span className="text-indigo-600">Rural Healthcare.</span>
             </h1>
             <p className="text-xl text-slate-500 leading-relaxed max-w-xl">
