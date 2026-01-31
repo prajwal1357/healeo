@@ -32,6 +32,70 @@ export default function DoctorDashboard() {
   const [doctorMessage, setDoctorMessage] = useState("");
   const [savingReview, setSavingReview] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+const [aiDraft, setAiDraft] = useState("");
+
+const generateAIReport = async (retryCount = 0) => {
+  // Guard clause: ensure there are records to process
+  if (!records || records.length === 0) {
+    alert("No patient records found to generate a report.");
+    return;
+  }
+
+  setIsGeneratingAI(true);
+  const latest = records[0];
+
+  try {
+    const response = await fetch("/api/generate-report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        patientName: selectedUser.name,
+        vitals: { 
+          bp: latest.bp, 
+          sugar: latest.sugar, 
+          weight: latest.weight 
+        },
+        symptoms: latest.symptoms || "None reported"
+      }),
+    });
+
+    // 1. Handle Rate Limiting (429)
+    if (response.status === 429 && retryCount < 3) {
+      const waitTime = Math.pow(2, retryCount) * 1000;
+      console.warn(`Rate limited. Retrying in ${waitTime}ms...`);
+      
+      await new Promise(res => setTimeout(res, waitTime));
+      // Recursively call the function and RETURN so the current execution stops
+      return await generateAIReport(retryCount + 1); 
+    }
+
+    // 2. Safety Check: If response is not 200-299, don't parse JSON
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Server Error (${response.status}):`, errorText);
+      alert(`AI generation failed: ${response.statusText}`);
+      return;
+    }
+
+    // 3. Successful response
+    const data = await response.json();
+    
+    if (data.report) {
+      setDoctorMessage(data.report); // Update the UI
+      setAiDraft(data.report);
+    } else {
+      alert(data.error || "AI could not generate a report format.");
+    }
+
+  } catch (err) {
+    console.error("Network/Client Error:", err);
+    alert("An unexpected error occurred. Please check your connection.");
+  } finally {
+    // Only stop the loading state if we are not in the middle of a retry
+    setIsGeneratingAI(false);
+  }
+};
 
   /* ---------------- FETCH STATS ---------------- */
   useEffect(() => {
@@ -276,29 +340,77 @@ export default function DoctorDashboard() {
                       )}
                     </div>
 
-                    <div className="bg-indigo-50/30 p-8 rounded-[2rem] border-2 border-indigo-50 space-y-6">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-200">
-                          <Stethoscope size={20} />
-                        </div>
-                        <h3 className="font-black text-slate-900 text-lg">Clinical Assessment</h3>
-                      </div>
-                      <textarea
-                        rows={4}
-                        className="w-full bg-white border-2 border-slate-100 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 outline-none transition-all placeholder:text-slate-300 font-medium"
-                        placeholder="Detail your clinical observations, diagnosis, or prescribed next steps for the field worker to follow..."
-                        value={doctorMessage}
-                        onChange={(e) => setDoctorMessage(e.target.value)}
-                      />
-                      <button
-                        onClick={markDoctorReviewed}
-                        disabled={savingReview}
-                        className="flex items-center justify-center gap-3 w-full bg-slate-900 text-white px-8 py-5 rounded-2xl font-black hover:bg-black active:scale-[0.98] transition-all disabled:opacity-50 shadow-xl shadow-slate-200"
-                      >
-                        {savingReview ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                        {savingReview ? "Finalizing Review..." : "Authorize Assessment & Mark Verified"}
-                      </button>
-                    </div>
+                    {/* --- CLINICAL ASSESSMENT SECTION WITH AI --- */}
+<div className="bg-indigo-50/30 p-8 rounded-[2rem] border-2 border-indigo-50 space-y-6 relative overflow-hidden">
+  
+  {/* Header with AI Trigger */}
+  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
+    <div className="flex items-center gap-3">
+      <div className="p-2 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-200">
+        <Stethoscope size={20} />
+      </div>
+      <h3 className="font-black text-slate-900 text-lg">Clinical Assessment</h3>
+    </div>
+    
+    {/* NEW: AI GENERATION BUTTON */}
+    <button
+      onClick={generateAIReport}
+      disabled={isGeneratingAI || records.length === 0}
+      className="group flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:shadow-xl hover:shadow-indigo-200 transition-all disabled:opacity-50 active:scale-95"
+    >
+      {isGeneratingAI ? (
+        <Loader2 className="animate-spin" size={14} />
+      ) : (
+        <Activity size={14} className="group-hover:animate-pulse" />
+      )}
+      {isGeneratingAI ? "AI Analyzing..." : "Generate AI Summary"}
+    </button>
+  </div>
+
+  {/* Textarea with AI Draft indicator */}
+  <div className="relative z-10">
+    <textarea
+      rows={4}
+      className="w-full bg-white border-2 border-slate-100 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 outline-none transition-all placeholder:text-slate-300 font-medium text-slate-700 leading-relaxed"
+      placeholder="Detail your clinical observations or use AI to generate a basic report based on vitals..."
+      value={doctorMessage}
+      onChange={(e) => setDoctorMessage(e.target.value)}
+    />
+    {aiDraft && doctorMessage === aiDraft && (
+      <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-[10px] font-black uppercase border border-indigo-100 animate-in fade-in slide-in-from-top-1">
+        <CheckCircle2 size={12} /> Gemini AI Draft
+      </div>
+    )}
+  </div>
+
+  {/* Action Buttons */}
+  <div className="flex flex-col sm:flex-row gap-3 relative z-10">
+    <button
+      onClick={markDoctorReviewed}
+      disabled={savingReview || !doctorMessage.trim()}
+      className="flex-1 flex items-center justify-center gap-3 bg-slate-900 text-white px-8 py-5 rounded-2xl font-black hover:bg-black active:scale-[0.98] transition-all disabled:opacity-50 shadow-xl shadow-slate-200"
+    >
+      {savingReview ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+      {savingReview ? "Finalizing Review..." : "Authorize Assessment & Mark Verified"}
+    </button>
+    
+    {/* Reject/Clear Button */}
+    <button
+      onClick={() => {
+        setDoctorMessage("");
+        setAiDraft("");
+      }}
+      className="px-6 py-5 bg-white border-2 border-slate-100 text-slate-400 font-black rounded-2xl hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all"
+    >
+      Clear / Reject
+    </button>
+  </div>
+
+  {/* Decorative Background Icon */}
+  <div className="absolute -bottom-6 -right-6 opacity-5 text-indigo-600 pointer-events-none">
+    <HeartPulse size={120} />
+  </div>
+</div>
                   </>
                 )}
 
