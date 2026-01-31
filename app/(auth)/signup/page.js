@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   CheckCircle2
 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -84,6 +85,7 @@ export default function SignupPage() {
       if (patientError) throw patientError;
 
       setLoading(false);
+      toast.success("Signup successful! ");
       router.replace("/login");
     } catch (err) {
       setError(err.message);

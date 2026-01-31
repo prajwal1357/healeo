@@ -13,6 +13,7 @@ import {
   HeartHandshake,
   ShieldCheck,
 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -43,6 +44,7 @@ export default function LoginPage() {
     if (authError) {
       setError(authError.message);
     } else {
+      toast.success("Login successful!");
       router.replace("/dashboard");
     }
   };

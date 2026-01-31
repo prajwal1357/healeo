@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase/client";
 import { 
   ShieldAlert, Check, X, User, Clock, AlertCircle, Loader2, Trash2, ChevronDown 
 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function AdminRequestsPage() {
   const [requests, setRequests] = useState([]);
@@ -62,6 +63,8 @@ export default function AdminRequestsPage() {
           .from("access_requests")
           .delete()
           .eq("id", request.id);
+
+          toast.success("Request deleted.");
         if (error) throw error;
       } else {
         // Option B: Approve and change role in app_users
@@ -70,6 +73,7 @@ export default function AdminRequestsPage() {
           .from("access_requests")
           .update({ status: "approved", requested_role: newRole })
           .eq("id", request.id);
+          toast.success("Request accepted.");
         if (reqUpdateErr) throw reqUpdateErr;
 
         // 2. Update actual user role
@@ -77,13 +81,14 @@ export default function AdminRequestsPage() {
           .from("app_users")
           .update({ role: newRole })
           .eq("id", request.user_id);
+          toast.success("user promoted.");
         if (userUpdateErr) throw userUpdateErr;
       }
 
       // Remove from UI
       setRequests(prev => prev.filter(r => r.id !== request.id));
     } catch (err) {
-      alert("Action failed: " + err.message);
+      toast.error("Action failed: " + err.message);
     } finally {
       setActionId(null);
     }

@@ -15,6 +15,7 @@ import {
   ChevronRight,
   ShieldAlert
 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -91,7 +92,7 @@ export default function AdminDashboard() {
       .eq("id", userId);
 
     if (error) {
-      alert("Error updating role: " + error.message);
+      toast.error("Error updating role: " + error.message);
     } else {
       fetchCounts(); // Refresh stats after role change
     }

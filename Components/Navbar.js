@@ -61,7 +61,7 @@ export default function Navbar() {
             onClick={() => router.push("/")}
           >
             <div className="bg-blue-600 p-1.5 rounded-xl shadow-lg shadow-blue-200 group-hover:rotate-12 transition-transform">
-              <Zap size={18} className="text-white fill-current" />
+              {/* <Zap size={18} className="text-white fill-current" /> */}
             </div>
             <span className="text-xl font-black text-slate-900 tracking-tighter">
               Caresora<span className="text-blue-600">.</span>

@@ -21,6 +21,7 @@ import {
   Loader2,
   UserCheck
 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function DoctorDashboard() {
   const [stats, setStats] = useState({ workers: 0, patients: 0, patientsLooked: 0 });
@@ -38,7 +39,7 @@ const [aiDraft, setAiDraft] = useState("");
 const generateAIReport = async (retryCount = 0) => {
   // Guard clause: ensure there are records to process
   if (!records || records.length === 0) {
-    alert("No patient records found to generate a report.");
+    toast.error("No patient records found to generate a report.");
     return;
   }
 
@@ -74,7 +75,7 @@ const generateAIReport = async (retryCount = 0) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`Server Error (${response.status}):`, errorText);
-      alert(`AI generation failed: ${response.statusText}`);
+      toast.error(`AI generation failed: ${response.statusText}`);
       return;
     }
 
@@ -85,12 +86,12 @@ const generateAIReport = async (retryCount = 0) => {
       setDoctorMessage(data.report); // Update the UI
       setAiDraft(data.report);
     } else {
-      alert(data.error || "AI could not generate a report format.");
+      toast.error(data.error || "AI could not generate a report format.");
     }
 
   } catch (err) {
     console.error("Network/Client Error:", err);
-    alert("An unexpected error occurred. Please check your connection.");
+    toast.error("An unexpected error occurred. Please check your connection.");
   } finally {
     // Only stop the loading state if we are not in the middle of a retry
     setIsGeneratingAI(false);

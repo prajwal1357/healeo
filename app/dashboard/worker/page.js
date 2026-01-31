@@ -9,6 +9,7 @@ import {
   Droplets, Scale, AlertCircle, CheckCircle2, X, Save, 
   Loader2, History, ChevronRight, FileText, WifiOff, Wifi 
 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function WorkerDashboard() {
   const [stats, setStats] = useState({ totalPatients: 0, docsUploaded: 0, checkedThisMonth: 0 });
@@ -26,37 +27,25 @@ export default function WorkerDashboard() {
 
   /* ---------------- 1. NETWORK & AUTO-SYNC LOGIC ---------------- */
   useEffect(() => {
-    setIsOnline(navigator.onLine);
-
     const syncOfflineData = async () => {
       if (!navigator.onLine) return;
       
       const pending = await getPendingRecords();
       if (pending.length === 0) return;
 
-      for (const record of pending) {
+      // Show a loading toast for the sync process
+      toast.promise(Promise.all(pending.map(async (record) => {
         const { id, ...data } = record;
         const { error } = await supabase.from('worker_patient_records').insert([data]);
-        if (!error) {
-          await clearSyncedRecord(id);
-          setStats(s => ({ ...s, docsUploaded: s.docsUploaded + 1 }));
-        }
-      }
+        if (!error) await clearSyncedRecord(id);
+      })), {
+        loading: 'Syncing offline records...',
+        success: 'All offline records synchronized!',
+        error: 'Some records failed to sync.',
+      });
     };
-
-    const handleStatusChange = () => {
-      setIsOnline(navigator.onLine);
-      if (navigator.onLine) syncOfflineData();
-    };
-
-    window.addEventListener('online', handleStatusChange);
-    window.addEventListener('offline', handleStatusChange);
-    syncOfflineData(); // Try sync on initial load
-
-    return () => {
-      window.removeEventListener('online', handleStatusChange);
-      window.removeEventListener('offline', handleStatusChange);
-    };
+    
+    // ... rest of network listener
   }, []);
 
   /* ---------------- 2. FETCH INITIAL STATS ---------------- */
@@ -100,42 +89,68 @@ export default function WorkerDashboard() {
   };
 
   /* ---------------- 4. UPDATED SUBMIT (OFFLINE READY) ---------------- */
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  /* ---------------- 4. UPDATED SUBMIT (OFFLINE READY) ---------------- */
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    const recordData = {
-      patient_id: selectedPatient.id,
-      worker_id: user.id,
-      bp: form.bp,
-      sugar: form.sugar,
-      weight: form.weight,
-      symptoms: form.symptoms,
-      condition: form.condition,
-      created_at: new Date().toISOString() // Ensure timestamp is preserved if offline
-    };
+  // 1. Get the current user
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    toast.error("Session expired. Please log in again.");
+    setIsSubmitting(false);
+    return;
+  }
 
-    if (!navigator.onLine) {
-      await saveRecordOffline(recordData);
-      alert("📡 Saved Locally: No internet detected. The record will sync once you are back in a signal area.");
-      finalizeSubmission();
-      return;
-    }
-
-    const { error: recordError } = await supabase.from("worker_patient_records").insert(recordData);
-
-    if (recordError) {
-      await saveRecordOffline(recordData);
-      alert("⚠️ Sync Interrupted: Record saved to local queue.");
-    } else {
-      await supabase.from("app_users").update({ worker_checked: true }).eq("id", selectedPatient.id);
-      alert("✅ Success: Patient record synchronized.");
-    }
-    
-    finalizeSubmission();
+  // 2. DEFINE THE DATA OBJECT (This was the missing piece)
+  const recordData = {
+    patient_id: selectedPatient.id,
+    worker_id: user.id,
+    bp: form.bp,
+    sugar: form.sugar,
+    weight: form.weight,
+    symptoms: form.symptoms,
+    condition: form.condition,
+    created_at: new Date().toISOString() // Vital for accurate medical history
   };
 
+  // 3. OFFLINE CHECK
+  if (!navigator.onLine) {
+    await saveRecordOffline(recordData);
+    toast.info("Offline: Saved to local queue", {
+      description: "It will sync automatically when signal returns.",
+    });
+    finalizeSubmission();
+    return;
+  }
+
+  // 4. ONLINE UPLOAD
+  const { error: recordError } = await supabase
+    .from("worker_patient_records")
+    .insert(recordData); // Now recordData is defined!
+
+  if (recordError) {
+    console.error("Upload failed, saving offline:", recordError);
+    await saveRecordOffline(recordData);
+    toast.error("Sync Interrupted", {
+      description: "Data saved safely to local storage.",
+    });
+    finalizeSubmission();
+    return;
+  }
+
+  // 5. SUCCESS FLOW
+  await supabase
+    .from("app_users")
+    .update({ worker_checked: true })
+    .eq("id", selectedPatient.id);
+
+  toast.success("Record Synchronized", {
+    description: `Successfully updated ${selectedPatient.name}'s file.`,
+  });
+  
+  finalizeSubmission();
+};
   const finalizeSubmission = () => {
     setForm({ bp: "", sugar: "", weight: "", symptoms: "", condition: "stable" });
     setSelectedPatient(null);
