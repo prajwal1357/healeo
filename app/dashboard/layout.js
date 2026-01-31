@@ -11,11 +11,11 @@ import {
   Stethoscope, 
   MessageSquare, 
   UserCircle, 
-  ClipboardList, 
   Menu, 
-  X, 
   LogOut,
-  HeartPulse
+  HeartPulse,
+  Bell,
+  Search
 } from "lucide-react";
 
 export default function DashboardLayout({ children }) {
@@ -25,30 +25,15 @@ export default function DashboardLayout({ children }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  /* ---------------- AUTH & ROLE CHECK ---------------- */
   useEffect(() => {
     const fetchRole = async () => {
       const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { router.replace("/login"); return; }
 
-      if (!user) {
-        router.replace("/login");
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("app_users")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-
-      if (error || !data) {
-        setRole("patient"); // Fallback
-      } else {
-        setRole(data.role);
-      }
+      const { data } = await supabase.from("app_users").select("role").eq("id", user.id).single();
+      setRole(data?.role || "patient");
       setLoading(false);
     };
-
     fetchRole();
   }, [router]);
 
@@ -62,23 +47,19 @@ export default function DashboardLayout({ children }) {
   const links = roleBasedLinks[role] || [];
 
   return (
-    <div className="min-h-screen flex bg-[#fcfcfd] font-sans">
+    <div className="min-h-screen flex bg-[#f8fafc] font-sans pt-20">
       
-      {/* --- Mobile Overlay --- */}
+      {/* --- Mobile Sidebar Overlay --- */}
       {menuOpen && (
-        <div
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 md:hidden animate-in fade-in duration-300"
-          onClick={() => setMenuOpen(false)}
-        />
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] md:hidden" onClick={() => setMenuOpen(false)} />
       )}
 
       {/* --- Sidebar --- */}
-      <aside
-        className={`fixed md:sticky top-0 z-50 bg-white border-r border-slate-100 w-72 h-screen flex flex-col
-        transform transition-all duration-300 ease-in-out
-        ${menuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}`}
-      >
-        {/* Logo Section */}
+      <aside className={`
+        fixed md:sticky top-0 z-[70] bg-white border-r border-slate-100 w-72 h-screen flex flex-col
+        transition-transform duration-300 ease-in-out
+        ${menuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}
+      `}>
         <div className="p-8 flex items-center gap-3">
           <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
             <HeartPulse size={24} />
@@ -86,52 +67,57 @@ export default function DashboardLayout({ children }) {
           <span className="text-xl font-black text-slate-900 tracking-tight italic">Caresora</span>
         </div>
 
-        {/* Navigation Section */}
         <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto">
           <p className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Main Menu</p>
           {links.map((link) => (
-            <SidebarLink
-              key={link.id}
-              href={link.href}
-              label={link.label}
-              icon={link.icon}
-              active={pathname === link.href}
-              onClick={() => setMenuOpen(false)}
-            />
+            <SidebarLink key={link.id} href={link.href} label={link.label} icon={link.icon} active={pathname === link.href} onClick={() => setMenuOpen(false)} />
           ))}
         </nav>
 
-        {/* User Profile / Logout Section */}
         <div className="p-4 border-t border-slate-50">
-           <button 
-             onClick={handleLogout}
-             className="w-full flex items-center gap-3 px-4 py-3 text-rose-500 font-bold text-sm rounded-2xl hover:bg-rose-50 transition-colors group"
-           >
+           <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-rose-500 font-bold text-sm rounded-2xl hover:bg-rose-50 transition-colors group">
              <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
-             Sign Out Account
+             Sign Out
            </button>
         </div>
       </aside>
 
       {/* --- Main Content Area --- */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative">
         
-        {/* Top Header (Mobile Only) */}
-        <header className="md:hidden bg-white/80 backdrop-blur-md sticky top-0 z-30 border-b border-slate-100 px-6 py-4 flex justify-between items-center">
-          <button
-            onClick={() => setMenuOpen(true)}
-            className="p-2 bg-slate-50 rounded-xl text-slate-600 active:scale-95 transition-all"
-          >
-            <Menu size={24} />
-          </button>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-black text-indigo-600 uppercase tracking-widest">{role}</span>
-            <div className="w-8 h-8 bg-slate-100 rounded-full border border-slate-200" />
+        {/* --- Top Glass Navbar --- */}
+        <header className="sticky top-0 z-50 w-full px-6 py-4">
+          <div className="bg-white/70 backdrop-blur-md border border-white/20 shadow-sm rounded-[1.5rem] px-6 py-3 flex items-center justify-between">
+            <button onClick={() => setMenuOpen(true)} className="md:hidden p-2 bg-slate-50 rounded-lg text-slate-600">
+              <Menu size={20} />
+            </button>
+            
+            {/* <div className="hidden md:flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 w-64">
+              <Search size={16} className="text-slate-400" />
+              <input type="text" placeholder="Search..." className="bg-transparent text-sm outline-none w-full" />
+            </div> */}
+
+            <div className="flex items-center gap-4">
+              <button className="p-2 text-slate-400 hover:text-indigo-600 transition-colors relative">
+                <Bell size={20} />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white" />
+              </button>
+              <div className="h-8 w-[1px] bg-slate-200 mx-1" />
+              <div className="flex items-center gap-3">
+                <div className="text-right hidden sm:block">
+                  <p className="text-xs font-black text-slate-900 leading-none capitalize">{role}</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Status: Online</p>
+                </div>
+                <div className="w-10 h-10 bg-indigo-100 rounded-xl border border-indigo-200 flex items-center justify-center text-indigo-600 font-black">
+                  {role?.charAt(0).toUpperCase()}
+                </div>
+              </div>
+            </div>
           </div>
         </header>
 
-        {/* Content Wrapper */}
-        <main className="flex-1 p-4 md:p-10 max-w-7xl w-full mx-auto animate-in fade-in slide-in-from-bottom-2 duration-700">
+        {/* --- Content --- */}
+        <main className="flex-1 p-4 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
           {children}
         </main>
       </div>
@@ -139,8 +125,7 @@ export default function DashboardLayout({ children }) {
   );
 }
 
-/* ---------------- MENU CONFIG ---------------- */
-
+/* --- Same Sub-components and roleBasedLinks as your original code --- */
 const roleBasedLinks = {
   admin: [
     { id: "admin-db", label: "Dashboard", href: "/dashboard/admin", icon: <LayoutDashboard size={20}/> },
@@ -162,8 +147,6 @@ const roleBasedLinks = {
   ],
 };
 
-/* ---------------- UI COMPONENTS ---------------- */
-
 function SidebarLink({ href, label, icon, active, onClick }) {
   return (
     <Link
@@ -178,9 +161,6 @@ function SidebarLink({ href, label, icon, active, onClick }) {
         {icon}
       </div>
       {label}
-      {active && (
-        <div className="ml-auto w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-      )}
     </Link>
   );
 }
